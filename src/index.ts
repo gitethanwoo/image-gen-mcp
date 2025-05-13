@@ -9,16 +9,14 @@ interface Env {
 }
 
 // Define our MCP agent with tools
-export class MyMCP extends McpAgent {
+export class MyMCP extends McpAgent<Env, unknown, Record<string, unknown>> {
 	server = new McpServer({
 		name: "ImageGenMCP",
 		version: "1.0.0",
 	});
 	
-	private env: Env | null = null;
-	
-	setEnv(env: Env) {
-		this.env = env;
+	constructor(ctx: any, env: Env) {
+		super(ctx, env);
 	}
 
 	// Helper to fetch from Replicate
@@ -184,17 +182,11 @@ export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 		
-		// Create an instance with environment variables
-		const agent = new MyMCP();
-		agent.setEnv(env);
-
 		if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-			// @ts-ignore
 			return MyMCP.serveSSE("/sse").fetch(request, env, ctx);
 		}
 
 		if (url.pathname === "/mcp") {
-			// @ts-ignore
 			return MyMCP.serve("/mcp").fetch(request, env, ctx);
 		}
 

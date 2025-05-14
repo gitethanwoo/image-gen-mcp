@@ -183,11 +183,21 @@ export default {
 		const url = new URL(request.url);
 		
 		if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-			return MyMCP.serveSSE("/sse").fetch(request, env, ctx);
+			// Create and initialize the MCP agent before serving
+			const agent = new MyMCP(ctx, env);
+			// Initialize the tools by calling init() before serving the SSE endpoint
+			return agent.init().then(() => {
+				return MyMCP.serveSSE("/sse").fetch(request, env, ctx);
+			});
 		}
 
 		if (url.pathname === "/mcp") {
-			return MyMCP.serve("/mcp").fetch(request, env, ctx);
+			// Create and initialize the MCP agent before serving
+			const agent = new MyMCP(ctx, env);
+			// Initialize the tools by calling init() before serving the MCP endpoint
+			return agent.init().then(() => {
+				return MyMCP.serve("/mcp").fetch(request, env, ctx);
+			});
 		}
 
 		return new Response("Not found", { status: 404 });
